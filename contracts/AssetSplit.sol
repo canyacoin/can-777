@@ -29,29 +29,31 @@ contract AssetSplit is Ownable {
     
     CanYaCoin public CanYaCoinToken;
 
-    // Public Addresses
+    /** @dev Public Addresses */
     address public operationalAddress;
     address public daoAddress;
     address public charityAddress;
 
-    // Splits
+    /** @dev Splits */
     uint256 public operationalSplitPercent = 30;
     uint256 public daoSplitPercent = 30;
     uint256 public charitySplitPercent = 10;
     uint256 public burnSplitPercent = 30;
 
-    // Events
+    /** @dev Events */
     event OperationalSplit(uint256 _split);
     event DaoSplit(uint256 _split);
     event CharitySplit(uint256 _split);
     event BurnSplit(uint256 _split);
 
 
-    /// @dev Deploys the asset splitting contract
-    /// @param _tokenAddress Address of the CAN token contract
-    /// @param _operational Address of the operational holdings
-    /// @param _dao Address of the reward holdings
-    /// @param _charity Address of the charity holdings
+    /**
+     *  @dev Deploys the asset splitting contract
+     *  @param _tokenAddress Address of the CAN token contract
+     *  @param _operational Address of the operational holdings
+     *  @param _dao Address of the reward holdings
+     *  @param _charity Address of the charity holdings
+     */
     constructor (
     address _tokenAddress,
     address _dao,
@@ -70,15 +72,16 @@ contract AssetSplit is Ownable {
         charityAddress = _charity;
     }
 
-    // Accepts ether from anyone
+    /** @dev Accepts ether from anyone */
     function() public payable { } 
 
-    /// @dev Splits the tokens from the owner address to the defined locations
+    /** @dev Splits the tokens from the owner address to the defined locations */
     function split () public {
         // Collect current balance
         uint256 assetContractBal = CanYaCoinToken.balanceOf(this);
         
-        if(assetContractBal == 0) return;           // Exit peacefully if nothing here
+        if(assetContractBal == 0) return;           
+        // Exit peacefully if nothing here
         
         // Get the amounts of tokens for each recipient 
         uint256 onePercentOfSplit = assetContractBal / 100;
@@ -109,7 +112,7 @@ contract AssetSplit is Ownable {
         emit BurnSplit(burnSplitAmount);
     }
 
-    // Update Addresses
+    /** @dev Update addresses */
     function updateDaoAddress (address _new) public onlyOwner {
         daoAddress = _new;
     }

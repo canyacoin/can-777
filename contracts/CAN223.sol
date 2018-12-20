@@ -277,7 +277,7 @@ contract CanYaCoin is Ownable {
         if (!feeWhitelist_[_from]) {
             if (transferFeePercentTenths > 0){
                 return (_value.mul(transferFeePercentTenths)).div(1000) + transferFeeFlat;
-            } else{
+            } else {
                 return transferFeeFlat; 
             }
         }

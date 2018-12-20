@@ -1,2 +1,3 @@
-# canya-contracts-token
+# CanYa Contracts
+
 Smart Contracts associated with CanYaCoin and token management
