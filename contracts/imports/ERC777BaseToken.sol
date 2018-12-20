@@ -163,28 +163,27 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
     {
         requireMultiple(_amount);
 
-        uint256 feeAmount = _getTransferFeeAmount(_operator, _amount);            // Get fee amount
-        uint256 sendAmount = _amount.sub(feeAmount);
-
         callSender(_operator, _from, _to, _amount, _data, _operatorData);
 
         require(_to != address(0), "Cannot send to 0x0");
         require(mBalances[_from] >= _amount, "Not enough funds");
 
-        mBalances[_from] = mBalances[_from].sub(_amount);
-        mBalances[_to] = mBalances[_to].add(sendAmount);        
+        uint256 feeAmount = _getTransferFeeAmount(_operator, _amount);       
+
+        mBalances[_to] = mBalances[_to].add(_amount.sub(feeAmount));    
+        mBalances[_from] = mBalances[_from].sub(_amount);    
         mBalances[feeRecipient] = mBalances[feeRecipient].add(feeAmount);  // Add to Fee Recipient
 
-        totalTX += _amount;
+        totalTX = totalTX.add(_amount);
         totalTXCount += 1;
         if(feeAmount > 0){
-            totalFees += feeAmount;
+            totalFees = totalFees.add(feeAmount);
             emit Sent(_operator, _from, feeRecipient, feeAmount, "", "");
         }
 
-        callRecipient(_operator, _from, _to, sendAmount, _data, _operatorData, _preventLocking);
+        callRecipient(_operator, _from, _to, _amount.sub(feeAmount), _data, _operatorData, _preventLocking);
 
-        emit Sent(_operator, _from, _to, sendAmount, _data, _operatorData);
+        emit Sent(_operator, _from, _to, _amount.sub(feeAmount), _data, _operatorData);
     }
 
     /// @notice Helper function actually performing the burning of tokens.
