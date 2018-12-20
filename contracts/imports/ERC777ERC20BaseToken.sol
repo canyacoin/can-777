@@ -17,9 +17,10 @@ contract ERC777ERC20BaseToken is ERC20Token, ERC777BaseToken {
         string _name,
         string _symbol,
         uint256 _granularity,
-        address[] _defaultOperators
+        address[] _defaultOperators,
+        address _feeRecipient
     )
-        internal ERC777BaseToken(_name, _symbol, _granularity, _defaultOperators)
+        internal ERC777BaseToken(_name, _symbol, _granularity, _defaultOperators, _feeRecipient)
     {
         mErc20compatible = true;
         setInterfaceImplementation("ERC20Token", this);

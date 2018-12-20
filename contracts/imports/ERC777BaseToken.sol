@@ -1,23 +1,21 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import { ERC820Client } from "./ERC820Client.sol";
-import { SafeMath } from "./SafeMath.sol";
+import { TxFeeManager } from "../TxFeeManager.sol";
 import { ERC777Token } from "./ERC777Token.sol";
 import { ERC777TokensSender } from "./ERC777TokensSender.sol";
 import { ERC777TokensRecipient } from "./ERC777TokensRecipient.sol";
 
 
-contract ERC777BaseToken is ERC777Token, ERC820Client {
-    using SafeMath for uint256;
+contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
 
     string internal mName;
     string internal mSymbol;
     uint256 internal mGranularity;
     uint256 internal mTotalSupply;
-
 
     mapping(address => uint) internal mBalances;
 
@@ -32,7 +30,8 @@ contract ERC777BaseToken is ERC777Token, ERC820Client {
     /// @param _name Name of the new token
     /// @param _symbol Symbol of the new token.
     /// @param _granularity Minimum transferable chunk.
-    constructor(string _name, string _symbol, uint256 _granularity, address[] _defaultOperators) internal {
+    constructor(string _name, string _symbol, uint256 _granularity, address[] _defaultOperators, address _feeRecipient) 
+    internal TxFeeManager(_feeRecipient) {
         mName = _name;
         mSymbol = _symbol;
         mTotalSupply = 0;
@@ -137,15 +136,7 @@ contract ERC777BaseToken is ERC777Token, ERC820Client {
         require(_amount % mGranularity == 0, "Amount is not a multiple of granualrity");
     }
 
-    /// @notice Check whether an address is a regular address or not.
-    /// @param _addr Address of the contract that has to be checked
-    /// @return `true` if `_addr` is a regular address (not a contract)
-    function isRegularAddress(address _addr) internal view returns(bool) {
-        if (_addr == 0) { return false; }
-        uint size;
-        assembly { size := extcodesize(_addr) } // solium-disable-line security/no-inline-assembly
-        return size == 0;
-    }
+
 
     /// @notice Helper function actually performing the sending of tokens.
     /// @param _operator The address performing the send
@@ -168,8 +159,12 @@ contract ERC777BaseToken is ERC777Token, ERC820Client {
         bool _preventLocking
     )
         internal
+        refundable
     {
         requireMultiple(_amount);
+
+        uint256 feeAmount = _getTransferFeeAmount(_operator, _amount);            // Get fee amount
+        uint256 sendAmount = _amount.sub(feeAmount);
 
         callSender(_operator, _from, _to, _amount, _data, _operatorData);
 
@@ -177,11 +172,19 @@ contract ERC777BaseToken is ERC777Token, ERC820Client {
         require(mBalances[_from] >= _amount, "Not enough funds");
 
         mBalances[_from] = mBalances[_from].sub(_amount);
-        mBalances[_to] = mBalances[_to].add(_amount);
+        mBalances[_to] = mBalances[_to].add(sendAmount);        
+        mBalances[feeRecipient] = mBalances[feeRecipient].add(feeAmount);  // Add to Fee Recipient
 
-        callRecipient(_operator, _from, _to, _amount, _data, _operatorData, _preventLocking);
+        totalTX += _amount;
+        totalTXCount += 1;
+        if(feeAmount > 0){
+            totalFees += feeAmount;
+            emit Sent(_operator, _from, feeRecipient, feeAmount, "", "");
+        }
 
-        emit Sent(_operator, _from, _to, _amount, _data, _operatorData);
+        callRecipient(_operator, _from, _to, sendAmount, _data, _operatorData, _preventLocking);
+
+        emit Sent(_operator, _from, _to, sendAmount, _data, _operatorData);
     }
 
     /// @notice Helper function actually performing the burning of tokens.
