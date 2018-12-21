@@ -11,11 +11,10 @@ import { ERC777ERC20BaseToken } from "./imports/ERC777ERC20BaseToken.sol";
   */
 contract CanYaCoin is ERC777ERC20BaseToken {
 
+    string internal mURI;
+
     event ERC20Enabled();
     event ERC20Disabled();
-
-    /** @dev additional */
-    string internal mURI;
 
     constructor(
         string _name,
@@ -32,6 +31,12 @@ contract CanYaCoin is ERC777ERC20BaseToken {
         doMint(msg.sender, _initialSupply, "");
     }
 
+    /**
+     * @dev Updates the basic token details if required
+     * @param _updatedName New token name
+     * @param _updatedSymbol New token symbol
+     * @param _updatedURI New token URI
+     */
     function updateDetails(string _updatedName, string _updatedSymbol, string _updatedURI) 
     public 
     onlyOwner {

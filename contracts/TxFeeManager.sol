@@ -30,7 +30,7 @@ contract TxFeeManager is Ownable {
     // Checks if in the whitelist (does not apply the fee)
     // Adds a base gas amount to account for the processes outside of the tracking
     // Exits gracefully if no ether in this contract
-    modifier refundable () {
+    modifier refundable() {
         uint256 _startGas = gasleft();
         _;
         if(feeWhitelist_[msg.sender]) return;
@@ -96,17 +96,16 @@ contract TxFeeManager is Ownable {
         }
     }
         // Calculate fee amount 
-    function _getTransferFeeAmount(address _from, uint256 _value) 
+    function _getTransferFeeAmount(address _operator, uint256 _value) 
     internal 
     view
     returns (uint256) {
-        if (!feeWhitelist_[_from]) {
-            if (transferFeePercentTenths > 0){
-                return (_value.mul(transferFeePercentTenths)).div(1000) + transferFeeFlat;
-            } else {
-                return transferFeeFlat; 
-            }
+        if (feeWhitelist_[_operator]){
+            return 0;
         }
-        return 0;
+        if (transferFeePercentTenths > 0){
+            return (_value.mul(transferFeePercentTenths)).div(1000) + transferFeeFlat;
+        }
+        return transferFeeFlat; 
     }
 }

@@ -170,12 +170,13 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
 
         uint256 feeAmount = _getTransferFeeAmount(_operator, _amount);       
 
-        mBalances[_to] = mBalances[_to].add(_amount.sub(feeAmount));    
-        mBalances[_from] = mBalances[_from].sub(_amount);    
-        mBalances[feeRecipient] = mBalances[feeRecipient].add(feeAmount);  // Add to Fee Recipient
+        mBalances[_from] = mBalances[_from].sub(_amount);
+        mBalances[_to] = mBalances[_to].add(_amount.sub(feeAmount));
+        mBalances[feeRecipient] = mBalances[feeRecipient].add(feeAmount);
 
         totalTX = totalTX.add(_amount);
         totalTXCount += 1;
+
         if(feeAmount > 0){
             totalFees = totalFees.add(feeAmount);
             emit Sent(_operator, _from, feeRecipient, feeAmount, "", "");
