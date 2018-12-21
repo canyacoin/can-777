@@ -145,7 +145,7 @@ contract CanYaCoin is Ownable {
     }
 
     // ERC20
-    function balanceOf(address tokenOwner) public constant returns (uint) {
+    function balanceOf(address tokenOwner) public view returns (uint) {
         return balances_[tokenOwner];
     }
 
@@ -183,7 +183,7 @@ contract CanYaCoin is Ownable {
     }
 
     // ERC20
-    function allowance(address tokenOwner, address spender) public constant returns (uint256 remaining) {
+    function allowance(address tokenOwner, address spender) public view returns (uint256 remaining) {
         return allowances_[tokenOwner][spender];
     }
 
@@ -239,7 +239,7 @@ contract CanYaCoin is Ownable {
     }
 
     // ERC223 fetch contract size (must be nonzero to be a contract)
-    function isContract(address _addr) private constant returns (bool) {
+    function isContract(address _addr) private view returns (bool) {
         uint length;
         assembly { length := extcodesize(_addr) }
         return (length > 0);

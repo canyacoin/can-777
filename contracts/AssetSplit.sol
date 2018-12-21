@@ -1,4 +1,4 @@
-pragma solidity 0.4.25;
+pragma solidity ^0.4.25;
 
 import "./imports/SafeMath.sol";
 import "./imports/Ownable.sol";
@@ -6,7 +6,7 @@ import "./imports/Ownable.sol";
  /** @dev CanYaCoin functions used in this contract */
 contract CanYaCoin {
     function transferFrom (address _from, address _to, uint256 _value) public returns (bool success);
-    function balanceOf(address _owner) constant public returns (uint256 balance);
+    function balanceOf(address _owner) public view returns (uint256 balance);
     function burn(uint256 value) public returns (bool success);
     function transfer (address _to, uint256 _value) public returns (bool success);
 }

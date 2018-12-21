@@ -1,6 +1,5 @@
 pragma solidity ^0.4.24;
 
-import "./imports/SafeMath.sol";
 import { ERC777ERC20BaseToken } from "./imports/ERC777ERC20BaseToken.sol";
 
  /** 
@@ -40,6 +39,12 @@ contract CanYaCoin is ERC777ERC20BaseToken {
         mURI = _uri;
         doMint(msg.sender, _initialSupply, "");
     }
+
+
+    /**
+     * @dev Accepts Ether from anyone since this contract refunds gas
+     */
+    function() public payable { } 
 
     /**
      * @dev Updates the basic token details if required
