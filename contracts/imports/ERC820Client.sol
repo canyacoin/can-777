@@ -9,7 +9,10 @@ contract ERC820Registry {
 }
 
 
-/// Base client to interact with the registry.
+ /** 
+  * @title ERC820Client - Base Client to contact registry
+  * @dev ERC820Client Implementation from https://github.com/jbaylina/ERC820
+  */
 contract ERC820Client {
     ERC820Registry constant ERC820REGISTRY = ERC820Registry(0x820b586C8C28125366C998641B09DCbE7d4cBF06);
 

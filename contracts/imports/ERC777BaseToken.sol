@@ -9,7 +9,11 @@ import { ERC777Token } from "./ERC777Token.sol";
 import { ERC777TokensSender } from "./ERC777TokensSender.sol";
 import { ERC777TokensRecipient } from "./ERC777TokensRecipient.sol";
 
-
+ /** 
+  * @title ERC777BaseToken
+  * @dev ERC777ERC20BaseToken Implementation from https://github.com/jacquesd/ERC777
+  * Additionally implements TxFeeManager and applies a Token tx fee to all transfers
+  */
 contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
 
     string internal mName;
@@ -24,12 +28,12 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
     mapping(address => mapping(address => bool)) internal mRevokedDefaultOperator;
     mapping(address => mapping(address => bool)) internal mAuthorizedOperators;
 
-    /* -- Constructor -- */
-    //
-    /// @notice Constructor to create a ReferenceToken
-    /// @param _name Name of the new token
-    /// @param _symbol Symbol of the new token.
-    /// @param _granularity Minimum transferable chunk.
+    /** 
+     *  @notice Constructor to create a ReferenceToken
+     *  @param _name Name of the new token
+     *  @param _symbol Symbol of the new token.
+     *  @param _granularity Minimum transferable chunk.
+     */
     constructor(string _name, string _symbol, uint256 _granularity, address[] _defaultOperators, address _feeRecipient) 
     internal TxFeeManager(_feeRecipient) {
         mName = _name;
@@ -46,36 +50,44 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
 
     /* -- ERC777 Interface Implementation -- */
     //
-    /// @return the name of the token
+    /** @return the name of the token */
     function name() public view returns (string) { return mName; }
 
-    /// @return the symbol of the token
+    /** @return the symbol of the token */
     function symbol() public view returns (string) { return mSymbol; }
 
-    /// @return the granularity of the token
+    /** @return the granularity of the token */
     function granularity() public view returns (uint256) { return mGranularity; }
 
-    /// @return the total supply of the token
+    /** @return the total supply of the token */
     function totalSupply() public view returns (uint256) { return mTotalSupply; }
 
-    /// @notice Return the account balance of some account
-    /// @param _tokenHolder Address for which the balance is returned
-    /// @return the balance of `_tokenAddress`.
+    /** 
+     *  @notice Return the account balance of some account
+     *  @param _tokenHolder Address for which the balance is returned
+     *  @return the balance of `_tokenAddress`.
+     */
     function balanceOf(address _tokenHolder) public view returns (uint256) { return mBalances[_tokenHolder]; }
 
-    /// @notice Return the list of default operators
-    /// @return the list of all the default operators
+    /** 
+     *  @notice Return the list of default operators
+     *  @return the list of all the default operators
+     */
     function defaultOperators() public view returns (address[]) { return mDefaultOperators; }
 
-    /// @notice Send `_amount` of tokens to address `_to` passing `_data` to the recipient
-    /// @param _to The address of the recipient
-    /// @param _amount The number of tokens to be sent
+    /** 
+     *  @notice Send `_amount` of tokens to address `_to` passing `_data` to the recipient
+     *  @param _to The address of the recipient
+     *  @param _amount The number of tokens to be sent
+     */
     function send(address _to, uint256 _amount, bytes _data) public {
         doSend(msg.sender, msg.sender, _to, _amount, _data, "", true);
     }
 
-    /// @notice Authorize a third party `_operator` to manage (send) `msg.sender`'s tokens.
-    /// @param _operator The operator that wants to be Authorized
+    /**
+     *  @notice Authorize a third party `_operator` to manage (send) `msg.sender`'s tokens.
+     *  @param _operator The operator that wants to be Authorized
+     */
     function authorizeOperator(address _operator) public {
         require(_operator != msg.sender, "Cannot authorize yourself as an operator");
         if (mIsDefaultOperator[_operator]) {
@@ -86,8 +98,10 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         emit AuthorizedOperator(_operator, msg.sender);
     }
 
-    /// @notice Revoke a third party `_operator`'s rights to manage (send) `msg.sender`'s tokens.
-    /// @param _operator The operator that wants to be Revoked
+    /**
+     *  @notice Revoke a third party `_operator`'s rights to manage (send) `msg.sender`'s tokens.
+     *  @param _operator The operator that wants to be Revoked
+     */
     function revokeOperator(address _operator) public {
         require(_operator != msg.sender, "Cannot revoke yourself as an operator");
         if (mIsDefaultOperator[_operator]) {
@@ -98,22 +112,26 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         emit RevokedOperator(_operator, msg.sender);
     }
 
-    /// @notice Check whether the `_operator` address is allowed to manage the tokens held by `_tokenHolder` address.
-    /// @param _operator address to check if it has the right to manage the tokens
-    /// @param _tokenHolder address which holds the tokens to be managed
-    /// @return `true` if `_operator` is authorized for `_tokenHolder`
+    /** 
+     *  @notice Check whether the `_operator` address is allowed to manage the tokens held by `_tokenHolder` address.
+     *  @param _operator address to check if it has the right to manage the tokens
+     *  @param _tokenHolder address which holds the tokens to be managed
+     *  @return `true` if `_operator` is authorized for `_tokenHolder`
+     */
     function isOperatorFor(address _operator, address _tokenHolder) public view returns (bool) {
         return (_operator == _tokenHolder // solium-disable-line operator-whitespace
             || mAuthorizedOperators[_operator][_tokenHolder]
             || (mIsDefaultOperator[_operator] && !mRevokedDefaultOperator[_operator][_tokenHolder]));
     }
 
-    /// @notice Send `_amount` of tokens on behalf of the address `from` to the address `to`.
-    /// @param _from The address holding the tokens being sent
-    /// @param _to The address of the recipient
-    /// @param _amount The number of tokens to be sent
-    /// @param _data Data generated by the user to be sent to the recipient
-    /// @param _operatorData Data generated by the operator to be sent to the recipient
+    /**
+     *  @notice Send `_amount` of tokens on behalf of the address `from` to the address `to`.
+     *  @param _from The address holding the tokens being sent
+     *  @param _to The address of the recipient
+     *  @param _amount The number of tokens to be sent
+     *  @param _data Data generated by the user to be sent to the recipient
+     *  @param _operatorData Data generated by the operator to be sent to the recipient
+     */
     function operatorSend(address _from, address _to, uint256 _amount, bytes _data, bytes _operatorData) public {
         require(isOperatorFor(msg.sender, _from), "Not an operator");
         doSend(msg.sender, _from, _to, _amount, _data, _operatorData, true);
@@ -128,27 +146,31 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         doBurn(msg.sender, _tokenHolder, _amount, _data, _operatorData);
     }
 
-    /* -- Helper Functions -- */
-    //
-    /// @notice Internal function that ensures `_amount` is multiple of the granularity
-    /// @param _amount The quantity that want's to be checked
+    
+    /**
+     *  @notice Internal function that ensures `_amount` is multiple of the granularity
+     *  @param _amount The quantity that want's to be checked
+     */
     function requireMultiple(uint256 _amount) internal view {
         require(_amount % mGranularity == 0, "Amount is not a multiple of granualrity");
     }
 
-
-
-    /// @notice Helper function actually performing the sending of tokens.
-    /// @param _operator The address performing the send
-    /// @param _from The address holding the tokens being sent
-    /// @param _to The address of the recipient
-    /// @param _amount The number of tokens to be sent
-    /// @param _data Data generated by the user to be passed to the recipient
-    /// @param _operatorData Data generated by the operator to be passed to the recipient
-    /// @param _preventLocking `true` if you want this function to throw when tokens are sent to a contract not
-    ///  implementing `ERC777tokensRecipient`.
-    ///  ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
-    ///  functions SHOULD set this parameter to `false`.
+    /**
+     *  @notice Helper function actually performing the sending of tokens.
+     *  @param _operator The address performing the send
+     *  @param _from The address holding the tokens being sent
+     *  @param _to The address of the recipient
+     *  @param _amount The number of tokens to be sent
+     *  @param _data Data generated by the user to be passed to the recipient
+     *  @param _operatorData Data generated by the operator to be passed to the recipient
+     *  @param _preventLocking `true` if you want this function to throw when tokens are sent to a contract not
+     *   implementing `ERC777tokensRecipient`.
+     *   ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
+     *   functions SHOULD set this parameter to `false`.
+     *  @dev Additionally, this function applies some implementation from TxFeeManager. 
+     *   A transfer fee is calculated based off the current rates and send to the fee collector.
+     *   If a user is eligible for fee collection, they will get the gas cost of the transfer refunded
+     */
     function doSend(
         address _operator,
         address _from,
@@ -186,13 +208,15 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
 
         emit Sent(_operator, _from, _to, _amount.sub(feeAmount), _data, _operatorData);
     }
-
-    /// @notice Helper function actually performing the burning of tokens.
-    /// @param _operator The address performing the burn
-    /// @param _tokenHolder The address holding the tokens being burn
-    /// @param _amount The number of tokens to be burnt
-    /// @param _data Data generated by the token holder
-    /// @param _operatorData Data generated by the operator
+    
+    /**
+     *  @notice Helper function actually performing the burning of tokens.
+     *  @param _operator The address performing the burn
+     *  @param _tokenHolder The address holding the tokens being burn
+     *  @param _amount The number of tokens to be burnt
+     *  @param _data Data generated by the token holder
+     *  @param _operatorData Data generated by the operator
+     */
     function doBurn(address _operator, address _tokenHolder, uint256 _amount, bytes _data, bytes _operatorData)
         internal
     {
@@ -207,18 +231,20 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         emit Burned(_operator, _tokenHolder, _amount, _data, _operatorData);
     }
 
-    /// @notice Helper function that checks for ERC777TokensRecipient on the recipient and calls it.
-    ///  May throw according to `_preventLocking`
-    /// @param _operator The address performing the send or mint
-    /// @param _from The address holding the tokens being sent
-    /// @param _to The address of the recipient
-    /// @param _amount The number of tokens to be sent
-    /// @param _data Data generated by the user to be passed to the recipient
-    /// @param _operatorData Data generated by the operator to be passed to the recipient
-    /// @param _preventLocking `true` if you want this function to throw when tokens are sent to a contract not
-    ///  implementing `ERC777TokensRecipient`.
-    ///  ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
-    ///  functions SHOULD set this parameter to `false`.
+    /**
+     *  @notice Helper function that checks for ERC777TokensRecipient on the recipient and calls it.
+     *   May throw according to `_preventLocking`
+     *  @param _operator The address performing the send or mint
+     *  @param _from The address holding the tokens being sent
+     *  @param _to The address of the recipient
+     *  @param _amount The number of tokens to be sent
+     *  @param _data Data generated by the user to be passed to the recipient
+     *  @param _operatorData Data generated by the operator to be passed to the recipient
+     *  @param _preventLocking `true` if you want this function to throw when tokens are sent to a contract not
+     *   implementing `ERC777TokensRecipient`.
+     *   ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
+     *   functions SHOULD set this parameter to `false`.
+     */
     function callRecipient(
         address _operator,
         address _from,
@@ -239,16 +265,18 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         }
     }
 
-    /// @notice Helper function that checks for ERC777TokensSender on the sender and calls it.
-    ///  May throw according to `_preventLocking`
-    /// @param _from The address holding the tokens being sent
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be sent
-    /// @param _data Data generated by the user to be passed to the recipient
-    /// @param _operatorData Data generated by the operator to be passed to the recipient
-    ///  implementing `ERC777TokensSender`.
-    ///  ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
-    ///  functions SHOULD set this parameter to `false`.
+    /**
+     *  @notice Helper function that checks for ERC777TokensSender on the sender and calls it.
+     *  May throw according to `_preventLocking`
+     * @param _from The address holding the tokens being sent
+     * @param _to The address of the recipient
+     * @param _amount The amount of tokens to be sent
+     * @param _data Data generated by the user to be passed to the recipient
+     * @param _operatorData Data generated by the operator to be passed to the recipient
+     *  implementing `ERC777TokensSender`.
+     *  ERC777 native Send functions MUST set this parameter to `true`, and backwards compatible ERC20 transfer
+     *  functions SHOULD set this parameter to `false`.
+     */
     function callSender(
         address _operator,
         address _from,

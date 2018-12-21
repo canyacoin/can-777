@@ -16,6 +16,16 @@ contract CanYaCoin is ERC777ERC20BaseToken {
     event ERC20Enabled();
     event ERC20Disabled();
 
+    /**
+     * @dev Constructor
+     * @param _name Name of the token
+     * @param _symbol Symbol of the token
+     * @param _uri URI of the token
+     * @param _granularity Minimum token multiple used in calculations
+     * @param _defaultOperators Array of default global operators
+     * @param _feeRecipient Address to receive token fees collected during transaction
+     * @param _initialSupply Amount of tokens to mint
+     */
     constructor(
         string _name,
         string _symbol,
@@ -45,28 +55,40 @@ contract CanYaCoin is ERC777ERC20BaseToken {
         mURI = _updatedURI;
     }
 
-    function URI() public view returns (string) { return mURI; }
+    /** @dev Getter for token URI */
+    function URI() 
+    public 
+    view 
+    returns (string) { 
+        return mURI; 
+    }
 
-    /** 
-     * @dev From 777 Reference Implementation
-     */  
-
-    /** @notice Disables the ERC20 interface */
-    function disableERC20() public onlyOwner {
+    /** @dev Disables the ERC20 interface */
+    function disableERC20() 
+    public 
+    onlyOwner {
         mErc20compatible = false;
         setInterfaceImplementation("ERC20Token", 0x0);
         emit ERC20Disabled();
     }
 
-    /** @notice Re enables the ERC20 interface. */
-    function enableERC20() public onlyOwner {
+    /** @dev Re enables the ERC20 interface. */
+    function enableERC20() 
+    public 
+    onlyOwner {
         mErc20compatible = true;
         setInterfaceImplementation("ERC20Token", this);
         emit ERC20Enabled();
     }
 
-
-    function doMint(address _tokenHolder, uint256 _amount, bytes _operatorData) private {
+    /**
+     * @dev Mints token to a particular token holder
+     * @param _tokenHolder Address of minting recipient
+     * @param _amount Amount of tokens to mint
+     * @param _operatorData Bytecode to send alongside minting 
+     */
+    function doMint(address _tokenHolder, uint256 _amount, bytes _operatorData) 
+    private {
         requireMultiple(_amount);
         mTotalSupply = mTotalSupply.add(_amount);
         mBalances[_tokenHolder] = mBalances[_tokenHolder].add(_amount);
@@ -74,6 +96,8 @@ contract CanYaCoin is ERC777ERC20BaseToken {
         callRecipient(msg.sender, 0x0, _tokenHolder, _amount, "", _operatorData, true);
 
         emit Minted(msg.sender, _tokenHolder, _amount, _operatorData);
-        if (mErc20compatible) { emit Transfer(0x0, _tokenHolder, _amount); }
+        if (mErc20compatible) { 
+            emit Transfer(0x0, _tokenHolder, _amount); 
+        }
     }
 }
