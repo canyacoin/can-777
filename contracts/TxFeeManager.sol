@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "./imports/Ownable.sol";
-import { SafeMath } from "./imports/SafeMath.sol";
+import { SafeMath } from "./external/SafeMath.sol";
+import { Ownable } from "./external/Ownable.sol";
 
  /** 
   * @title TxFeeManager

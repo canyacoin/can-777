@@ -1,8 +1,7 @@
 pragma solidity 0.4.25;
 
-import "./imports/SafeMath.sol";
-import "./imports/Ownable.sol";
-
+import { SafeMath } from "./external/SafeMath.sol";
+import { Ownable } from "./external/Ownable.sol";
 
  /** @dev ERC223 Receiver */
 interface ContractReceiver {

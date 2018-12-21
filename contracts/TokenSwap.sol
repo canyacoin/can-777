@@ -1,6 +1,6 @@
 pragma solidity 0.4.25;
 
-import "./imports/SafeMath.sol";
+import { SafeMath } from "./external/SafeMath.sol";
 
  /** @dev ERC20 Functions used in this contract */
 contract ERC20 {

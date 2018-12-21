@@ -79,9 +79,19 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
      *  @notice Send `_amount` of tokens to address `_to` passing `_data` to the recipient
      *  @param _to The address of the recipient
      *  @param _amount The number of tokens to be sent
+     *  @param _data Data to attach
      */
     function send(address _to, uint256 _amount, bytes _data) public {
         doSend(msg.sender, msg.sender, _to, _amount, _data, "", true);
+    }
+
+    /** 
+     *  @notice Send `_amount` of tokens to address `_to` passing `_data` to the recipient
+     *  @param _to The address of the recipient
+     *  @param _amount The number of tokens to be sent
+     */
+    function send(address _to, uint256 _amount) public {
+        doSend(msg.sender, msg.sender, _to, _amount, "", "", true);
     }
 
     /**
