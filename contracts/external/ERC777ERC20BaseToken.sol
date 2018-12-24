@@ -116,9 +116,15 @@ contract ERC777ERC20BaseToken is ERC20Token, ERC777BaseToken {
         bool _preventLocking
     )
         internal
+        returns (uint256 feeAmount)
     {
-        super.doSend(_operator, _from, _to, _amount, _data, _operatorData, _preventLocking);
-        if (mErc20compatible) { emit Transfer(_from, _to, _amount); }
+        feeAmount = super.doSend(_operator, _from, _to, _amount, _data, _operatorData, _preventLocking);
+        if (mErc20compatible) { 
+            if(feeAmount > 0){
+                emit Transfer(_from, feeRecipient, feeAmount);
+            }
+            emit Transfer(_from, _to, _amount.sub(feeAmount));
+        }
     }
 
     /** @dev Executes a token burn, calling the implementation from parent contract */

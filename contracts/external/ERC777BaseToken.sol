@@ -192,6 +192,7 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
     )
         internal
         refundable
+        returns (uint256 feeAmount)
     {
         requireMultiple(_amount);
 
@@ -200,7 +201,7 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         require(_to != address(0), "Cannot send to 0x0");
         require(mBalances[_from] >= _amount, "Not enough funds");
 
-        uint256 feeAmount = _getTransferFeeAmount(_operator, _amount);       
+        feeAmount = _getTransferFeeAmount(_operator, _amount);       
 
         mBalances[_from] = mBalances[_from].sub(_amount);
         mBalances[_to] = mBalances[_to].add(_amount.sub(feeAmount));
