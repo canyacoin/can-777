@@ -253,11 +253,6 @@ contract TxFeeManager is Ownable {
     /** @dev Total transaction fees collected */
     uint256 public totalFees = 0;
     
-    /** @dev Total transaction volume */
-    uint256 public totalTX = 0; 
-    
-    /** @dev Total transaction count */
-    uint256 public totalTXCount = 0;
     
     /** @dev Addresses who will not recieve refunds or tx fees */
     mapping(address => bool) feeWhitelist_;
@@ -613,9 +608,6 @@ contract ERC777BaseToken is TxFeeManager, ERC777Token, ERC820Client {
         mBalances[_from] = mBalances[_from].sub(_amount);
         mBalances[_to] = mBalances[_to].add(_amount.sub(feeAmount));
         mBalances[feeRecipient] = mBalances[feeRecipient].add(feeAmount);
-
-        totalTX = totalTX.add(_amount);
-        totalTXCount += 1;
 
         if(feeAmount > 0){
             totalFees = totalFees.add(feeAmount);
