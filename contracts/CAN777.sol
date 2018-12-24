@@ -2,12 +2,12 @@ pragma solidity ^0.4.24;
 
 import { ERC777ERC20BaseToken } from "./external/ERC777ERC20BaseToken.sol";
 
- /** 
-  * @title CanYaCoin
-  * @dev ERC777 Implementation including ERC20 compatibility
-  * Base implementation: https://github.com/jacquesd/ERC777
-  * Custom functionality include 
-  */
+/** 
+ * @title CanYaCoin
+ * @dev ERC777 Implementation including ERC20 compatibility
+ * Base implementation: https://github.com/jacquesd/ERC777
+ * Custom functionality include ecosystem fee and gas refunds
+ */
 contract CAN777 is ERC777ERC20BaseToken {
 
     string internal mURI;

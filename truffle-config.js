@@ -22,11 +22,10 @@
  *
  */
 
-// const HDWallet = require('truffle-hdwallet-provider');
-// const infuraKey = "fj4jll3k.....";
+const HDWalletProvider = require('truffle-hdwallet-provider');
+const infuraKey = "xxx";
 //
 // const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
   /**
@@ -87,7 +86,15 @@ module.exports = {
       gasPrice: 0x1,
       gas: 0x1fffffffffffff,
       network_id: '*'
-    }
+    },
+    ropsten: {
+      network_id: 3,
+      gas: 5500000,
+      gasPrice: 10000000000, // 10 GWei
+      provider: () => {
+        return new HDWalletProvider(process.env.WALLET_PKEY, `https://ropsten.infura.io/v3/${infuraKey}`)
+      }
+    },
   },
 
   // Set default mocha options here, use special reporters etc.
