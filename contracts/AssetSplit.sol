@@ -3,18 +3,14 @@ pragma solidity ^0.4.25;
 import { SafeMath } from "./external/SafeMath.sol";
 import { Ownable } from "./external/Ownable.sol";
 
- /** @dev CanYaCoin functions used in this contract */
+ /** @dev CanYaCoin 777 functions used in this contract */
 contract CanYaCoin {
     function transferFrom (address _from, address _to, uint256 _value) public returns (bool success);
     function balanceOf(address _owner) public view returns (uint256 balance);
-    function burn(uint256 value) public returns (bool success);
+    function burn(uint256 value, bytes data) public returns (bool success);
     function transfer (address _to, uint256 _value) public returns (bool success);
 }
 
- /** @dev ERC223 Receiver */
-interface ContractReceiver {
-    function tokenFallback( address from, uint value, bytes data ) external;
-}
 
  /** 
   * @title AssetSplit
@@ -103,7 +99,7 @@ contract AssetSplit is Ownable {
         require(CanYaCoinToken.transfer(operationalAddress, operationalSplitAmount));
         require(CanYaCoinToken.transfer(daoAddress, daoSplitAmount));
         require(CanYaCoinToken.transfer(charityAddress, charitySplitAmount));
-        require(CanYaCoinToken.burn(burnSplitAmount));
+        require(CanYaCoinToken.burn(burnSplitAmount, ""));
 
         // Emit the events
         emit OperationalSplit(operationalSplitAmount);
